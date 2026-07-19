@@ -1,40 +1,206 @@
-:root { color: #24313a; background: #f3f6f4; font-family: "Microsoft YaHei", "Noto Sans SC", sans-serif; }
-* { box-sizing: border-box; }
-body { margin: 0; min-width: 620px; min-height: 100vh; }
-button, select { font: inherit; }
-.app-shell { max-width: 840px; margin: 0 auto; padding: 42px 48px; }
-.app-header { border-bottom: 1px solid #d8e1dc; padding-bottom: 24px; }
-.app-header h1 { margin: 0; color: #1f2c33; font-size: 28px; font-weight: 600; letter-spacing: 0; }
-.app-header p { margin: 8px 0 0; color: #728078; font-size: 14px; }
-.workspace { padding-top: 28px; }
-.drop-zone { display: grid; justify-items: center; gap: 7px; padding: 34px 24px; border: 2px dashed #b9cac0; background: #fbfdfb; cursor: pointer; outline: none; transition: border-color .15s, background .15s; }
-.drop-zone:hover, .drop-zone:focus, .drop-zone.is-dragging { border-color: #167b51; background: #f0f8f3; }
-.drop-zone > .layui-icon { color: #167b51; font-size: 32px; }
-.drop-title { color: #26362d; font-size: 17px; }
-.drop-hint { color: #7b887f; font-size: 13px; }
-.drop-zone .layui-btn { margin-top: 7px; border-color: #b6c6bc; }
-.file-panel { display: flex; align-items: center; gap: 12px; margin-top: 16px; min-height: 70px; padding: 13px 16px; border: 1px solid #d6e0da; background: #fff; }
-.file-panel > .layui-icon { color: #167b51; font-size: 25px; }
-.file-copy { display: grid; min-width: 0; flex: 1; gap: 3px; }
-.file-label { overflow: hidden; color: #25332b; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
-.file-path { overflow: hidden; color: #829088; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
-.file-panel.is-empty { background: transparent; }
-.file-panel.is-empty > .layui-icon { color: #a5b0aa; }
-.file-panel.is-empty .file-label { color: #89948e; }
-.settings { display: grid; grid-template-columns: 160px 160px 1fr; gap: 18px; align-items: end; margin-top: 28px; padding: 18px 0; border-top: 1px solid #dce5df; border-bottom: 1px solid #dce5df; }
-.setting-item { display: grid; gap: 7px; }
-.setting-item label { color: #55645b; font-size: 13px; }
-.setting-item select { height: 38px; padding: 0 30px 0 12px; border: 1px solid #cbd7cf; border-radius: 0; background: #fff; color: #26362d; outline: none; }
-.setting-item select:focus { border-color: #167b51; }
-.output-note { display: flex; align-items: center; gap: 7px; min-width: 0; padding-bottom: 7px; color: #68776d; font-size: 13px; }
-.output-note .layui-icon { color: #167b51; }
-.output-note span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.action-row { margin-top: 24px; }
-.layui-btn { background-color: #167b51; }
-.layui-btn:hover { background-color: #126943; }
-.layui-btn-primary { background: #fff; color: #44554a; }
-.layui-btn-primary:hover { border-color: #167b51; color: #167b51; }
-.status { min-height: 22px; margin-top: 14px; color: #68776d; font-size: 13px; }
-.status.error { color: #bf3c31; }
-.status.success { color: #167b51; }
-@media (max-width: 700px) { .app-shell { padding: 28px; } .settings { grid-template-columns: 1fr 1fr; } .output-note { grid-column: 1 / -1; } }
+:root {
+    color: #24313a;
+    background: #f3f6f4;
+    font-family: 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+}
+* {
+    box-sizing: border-box;
+}
+body {
+    margin: 0;
+    min-width: 620px;
+    min-height: 100vh;
+}
+button,
+select {
+    font: inherit;
+}
+.app-shell {
+    max-width: 840px;
+    margin: 0 auto;
+    padding: 42px 48px;
+}
+.app-header {
+    border-bottom: 1px solid #d8e1dc;
+    padding-bottom: 24px;
+}
+.app-header h1 {
+    margin: 0;
+    color: #1f2c33;
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: 0;
+}
+.app-header p {
+    margin: 8px 0 0;
+    color: #728078;
+    font-size: 14px;
+}
+.workspace {
+    padding-top: 28px;
+}
+.drop-zone {
+    display: grid;
+    justify-items: center;
+    gap: 7px;
+    padding: 34px 24px;
+    border: 2px dashed #b9cac0;
+    background: #fbfdfb;
+    cursor: pointer;
+    outline: none;
+    transition:
+        border-color 0.15s,
+        background 0.15s;
+}
+.drop-zone:hover,
+.drop-zone:focus,
+.drop-zone.is-dragging {
+    border-color: #167b51;
+    background: #f0f8f3;
+}
+.drop-zone > .layui-icon {
+    color: #167b51;
+    font-size: 32px;
+}
+.drop-title {
+    color: #26362d;
+    font-size: 17px;
+}
+.drop-hint {
+    color: #7b887f;
+    font-size: 13px;
+}
+.drop-zone .layui-btn {
+    margin-top: 7px;
+    border-color: #b6c6bc;
+}
+.file-panel {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+    min-height: 70px;
+    padding: 13px 16px;
+    border: 1px solid #d6e0da;
+    background: #fff;
+}
+.file-panel > .layui-icon {
+    color: #167b51;
+    font-size: 25px;
+}
+.file-copy {
+    display: grid;
+    min-width: 0;
+    flex: 1;
+    gap: 3px;
+}
+.file-label {
+    overflow: hidden;
+    color: #25332b;
+    font-size: 14px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.file-path {
+    overflow: hidden;
+    color: #829088;
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.file-panel.is-empty {
+    background: transparent;
+}
+.file-panel.is-empty > .layui-icon {
+    color: #a5b0aa;
+}
+.file-panel.is-empty .file-label {
+    color: #89948e;
+}
+.settings {
+    display: grid;
+    grid-template-columns: 160px 160px 1fr;
+    gap: 18px;
+    align-items: end;
+    margin-top: 28px;
+    padding: 18px 0;
+    border-top: 1px solid #dce5df;
+    border-bottom: 1px solid #dce5df;
+}
+.setting-item {
+    display: grid;
+    gap: 7px;
+}
+.setting-item label {
+    color: #55645b;
+    font-size: 13px;
+}
+.setting-item select {
+    height: 38px;
+    padding: 0 30px 0 12px;
+    border: 1px solid #cbd7cf;
+    border-radius: 0;
+    background: #fff;
+    color: #26362d;
+    outline: none;
+}
+.setting-item select:focus {
+    border-color: #167b51;
+}
+.output-note {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    padding-bottom: 7px;
+    color: #68776d;
+    font-size: 13px;
+}
+.output-note .layui-icon {
+    color: #167b51;
+}
+.output-note span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.action-row {
+    margin-top: 24px;
+}
+.layui-btn {
+    background-color: #167b51;
+}
+.layui-btn:hover {
+    background-color: #126943;
+}
+.layui-btn-primary {
+    background: #fff;
+    color: #44554a;
+}
+.layui-btn-primary:hover {
+    border-color: #167b51;
+    color: #167b51;
+}
+.status {
+    min-height: 22px;
+    margin-top: 14px;
+    color: #68776d;
+    font-size: 13px;
+}
+.status.error {
+    color: #bf3c31;
+}
+.status.success {
+    color: #167b51;
+}
+@media (max-width: 700px) {
+    .app-shell {
+        padding: 28px;
+    }
+    .settings {
+        grid-template-columns: 1fr 1fr;
+    }
+    .output-note {
+        grid-column: 1 / -1;
+    }
+}

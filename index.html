@@ -1,68 +1,91 @@
 <!doctype html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PDF 转图片</title>
-    <link rel="stylesheet" href="/src/app.css" />
-  </head>
-  <body>
-    <main class="app-shell">
-      <header class="app-header">
-        <div>
-          <h1>PDF 转图片</h1>
-          <p>将每一页导出为清晰的本地图片</p>
-        </div>
-      </header>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>PDF 转图片</title>
+        <link rel="stylesheet" href="/src/app.css" />
+    </head>
+    <body>
+        <main class="app-shell">
+            <section class="workspace" aria-label="转换工作区">
+                <div
+                    id="drop-zone"
+                    class="drop-zone"
+                    tabindex="0"
+                    role="button"
+                    aria-label="选择 PDF 文件"
+                >
+                    <i class="layui-icon layui-icon-upload-drag"></i>
+                    <div class="drop-title">拖入 PDF 文件</div>
+                    <div class="drop-hint">或从本机选择一个文件</div>
+                    <button
+                        id="browse-button"
+                        type="button"
+                        class="layui-btn layui-btn-primary"
+                    >
+                        浏览文件
+                    </button>
+                </div>
 
-      <section class="workspace" aria-label="转换工作区">
-        <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="选择 PDF 文件">
-          <i class="layui-icon layui-icon-upload-drag"></i>
-          <div class="drop-title">拖入 PDF 文件</div>
-          <div class="drop-hint">或从本机选择一个文件</div>
-          <button id="browse-button" type="button" class="layui-btn layui-btn-primary">浏览文件</button>
-        </div>
+                <div
+                    id="file-panel"
+                    class="file-panel is-empty"
+                    aria-live="polite"
+                >
+                    <i class="layui-icon layui-icon-file"></i>
+                    <div class="file-copy">
+                        <span class="file-label">尚未选择文件</span>
+                        <span id="file-path" class="file-path"></span>
+                    </div>
+                    <button
+                        id="clear-button"
+                        type="button"
+                        class="layui-btn layui-btn-primary layui-btn-sm"
+                        title="移除文件"
+                        disabled
+                    >
+                        <i class="layui-icon layui-icon-close"></i>
+                    </button>
+                </div>
 
-        <div id="file-panel" class="file-panel is-empty" aria-live="polite">
-          <i class="layui-icon layui-icon-file"></i>
-          <div class="file-copy">
-            <span class="file-label">尚未选择文件</span>
-            <span id="file-path" class="file-path"></span>
-          </div>
-          <button id="clear-button" type="button" class="layui-btn layui-btn-primary layui-btn-sm" title="移除文件" disabled>
-            <i class="layui-icon layui-icon-close"></i>
-          </button>
-        </div>
+                <form class="settings" aria-label="导出设置">
+                    <div class="setting-item">
+                        <label for="format">图片格式</label>
+                        <select id="format" name="format">
+                            <option value="png" selected>PNG</option>
+                            <option value="jpg">JPG</option>
+                            <option value="tiff">TIFF</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label for="dpi">DPI</label>
+                        <select id="dpi" name="dpi">
+                            <option value="150">150</option>
+                            <option value="200">200</option>
+                            <option value="300" selected>300</option>
+                            <option value="600">600</option>
+                        </select>
+                    </div>
+                    <div class="output-note">
+                        <i class="layui-icon layui-icon-location"></i
+                        ><span id="output-path">选择文件后将显示输出目录</span>
+                    </div>
+                </form>
 
-        <form class="settings" aria-label="导出设置">
-          <div class="setting-item">
-            <label for="format">图片格式</label>
-            <select id="format" name="format">
-              <option value="png" selected>PNG</option>
-              <option value="jpg">JPG</option>
-              <option value="tiff">TIFF</option>
-            </select>
-          </div>
-          <div class="setting-item">
-            <label for="dpi">DPI</label>
-            <select id="dpi" name="dpi">
-              <option value="150">150</option>
-              <option value="200">200</option>
-              <option value="300" selected>300</option>
-              <option value="600">600</option>
-            </select>
-          </div>
-          <div class="output-note"><i class="layui-icon layui-icon-location"></i><span id="output-path">选择文件后将显示输出目录</span></div>
-        </form>
-
-        <div class="action-row">
-          <button id="convert-button" type="button" class="layui-btn layui-btn-fluid" disabled>
-            <i class="layui-icon layui-icon-release"></i>开始转换
-          </button>
-        </div>
-        <div id="status" class="status" aria-live="polite"></div>
-      </section>
-    </main>
-    <script type="module" src="/src/renderer.ts"></script>
-  </body>
+                <div class="action-row">
+                    <button
+                        id="convert-button"
+                        type="button"
+                        class="layui-btn layui-btn-fluid"
+                        disabled
+                    >
+                        <i class="layui-icon layui-icon-release"></i>开始转换
+                    </button>
+                </div>
+                <div id="status" class="status" aria-live="polite"></div>
+            </section>
+        </main>
+        <script type="module" src="/src/renderer.ts"></script>
+    </body>
 </html>
