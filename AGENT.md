@@ -27,11 +27,12 @@ license review. This project intentionally uses the standalone executable.
 
 - Runtime and desktop shell: Electron 33+.
 - Build tooling: Electron Forge with the Vite TypeScript template.
-- Renderer UI library: Layui 2 (`layui`, currently `2.13.8`). Use Layui as the
-  single shared component and visual language for the application UI.
+- Renderer UI library: Tailwind CSS 4 with daisyUI 5. Use daisyUI as the single
+  shared component and visual language for the application UI.
 - PDF engine: a pinned Poppler `pdftocairo` binary for each supported platform.
-- Image post-processing: `sharp`, only for optional resize, compression, and
-  format conversion after the PDF engine has rendered the page.
+- Image export: use Poppler's native PNG, JPEG, and TIFF output modes. Add a
+  post-processing dependency only when an explicitly requested feature cannot
+  be implemented through the pinned renderer.
 - Validation: Vitest for unit tests and Playwright for end-to-end desktop or UI
   smoke tests.
 
@@ -52,8 +53,8 @@ license review. This project intentionally uses the standalone executable.
   use either DPI or a scale factor, never arbitrary width and height distortion.
 - Default export settings: PNG, 300 DPI, sRGB output, one image per page, and
   zero-padded names such as `document-0001.png`.
-- For JPEG/WebP output, render at the requested DPI first, then pass the bitmap
-  through `sharp`; do not render the PDF at reduced browser-canvas resolution.
+- For JPEG and TIFF output, invoke Poppler at the requested DPI with its native
+  output mode; do not render the PDF at reduced browser-canvas resolution.
 - Use a temporary output directory and move completed files into the user
   selected folder only after the full job succeeds. Clean temporary files after
   cancellation or failure.
@@ -62,22 +63,20 @@ license review. This project intentionally uses the standalone executable.
 
 ## Renderer UI Rules
 
-- Import Layui 2 from the installed npm package through the Vite bundle. Do not
-  load its CSS or JavaScript from a CDN: packaged Electron builds must work
+- Import Tailwind CSS and daisyUI through the Vite CSS pipeline. Do not load
+  their CSS or JavaScript from a CDN: packaged Electron builds must work
   offline.
-- Use Layui modules and their documented initialization APIs for form controls,
-  upload/drop zones, progress indicators, tables, tabs, dialogs, notifications,
-  menus, and tooltips. Do not recreate equivalent controls with ad-hoc HTML.
-- Treat Layui as the only general-purpose UI component library. Small local CSS
-  is permitted for application layout and PDF-specific previews, but do not add
-  Bootstrap, Element, Ant Design, or another competing design system.
-- Keep UI state in TypeScript modules. Layui is responsible for component
-  rendering and interaction, while conversion jobs, filesystem access, and
-  validation remain behind the typed preload IPC boundary.
-- Re-render or call the documented Layui refresh/render API after changing DOM
-  content dynamically, especially for forms, selects, tables, and progress
-  state. Avoid manipulating Layui-generated internal markup directly.
-- Use Layui dialogs for expected user decisions and errors. Native Electron
+- Use daisyUI components for controls and states: `btn` for commands, `select`
+  for export settings, `alert` for results and errors, and `card` only where a
+  framed tool surface is needed. Use semantic daisyUI colors such as `primary`,
+  `success`, and `error` rather than fixed palette values.
+- Treat daisyUI as the only general-purpose component library. Prefer Tailwind
+  utility classes over custom CSS, and do not add Bootstrap, Layui, Element,
+  Ant Design, or another competing design system.
+- Keep UI state in TypeScript modules while daisyUI supplies presentation only;
+  conversion jobs, filesystem access, and validation remain behind the typed
+  preload IPC boundary.
+- Use daisyUI alerts for expected errors and result states. Native Electron
   dialogs remain the only mechanism for selecting input PDFs and output
   directories.
 - Keep the conversion workspace dense and task-oriented: input file list,

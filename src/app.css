@@ -1,2 +1,5 @@
-@import 'layui/dist/css/layui.css';
-@import './styles.css';
+@import 'tailwindcss';
+
+@plugin "daisyui" {
+    themes: corporate --default;
+}

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, Menu } from 'electron';
 import { join } from 'node:path';
 import { convertPdf, outputDirectoryFor } from './conversion';
 import type { ConversionOptions } from './types';
@@ -29,13 +29,15 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
+    Menu.setApplicationMenu(null);
+
     ipcMain.handle('pdf:choose', async () => {
         const result = await dialog.showOpenDialog(mainWindow!, {
             title: '选择 PDF 文件',
-            properties: ['openFile'],
+            properties: ['openFile', 'multiSelections'],
             filters: [{ name: 'PDF 文件', extensions: ['pdf'] }],
         });
-        return result.canceled ? null : result.filePaths[0];
+        return result.canceled ? [] : result.filePaths;
     });
 
     ipcMain.handle(
