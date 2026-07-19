@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowJs": false,
+    "types": ["node", "@electron-forge/plugin-vite/forge-vite-env"]
+  },
+  "include": ["src", "forge.config.ts", "vite.*.config.ts", "tests"]
+}
