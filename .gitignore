@@ -1,0 +1,13 @@
+node_modules/
+.npm-cache/
+
+out/
+dist/
+coverage/
+
+.vite/
+.forge/
+
+.env
+.env.*
+!.env.example
