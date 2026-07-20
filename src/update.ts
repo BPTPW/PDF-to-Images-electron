@@ -4,6 +4,16 @@ export interface ReleaseInfo {
     notes: string;
 }
 
+export interface UpdateProgress {
+    phase: 'download' | 'extract' | 'cancelled' | 'error';
+    percent: number;
+    downloadedBytes?: number;
+    totalBytes?: number;
+    speedBytesPerSecond?: number;
+    remainingSeconds?: number;
+    message?: string;
+}
+
 interface SemanticVersion {
     major: number;
     minor: number;
