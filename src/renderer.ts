@@ -6,6 +6,9 @@ const fileList = document.querySelector<HTMLUListElement>('#file-list')!;
 const dropZone = document.querySelector<HTMLDivElement>('#drop-zone')!;
 const browseButton =
     document.querySelector<HTMLButtonElement>('#browse-button')!;
+const browseDirectoryButton = document.querySelector<HTMLButtonElement>(
+    '#browse-directory-button',
+)!;
 const clearButton = document.querySelector<HTMLButtonElement>('#clear-button')!;
 const convertButton =
     document.querySelector<HTMLButtonElement>('#convert-button')!;
@@ -57,7 +60,7 @@ function renderList(): void {
         const empty = document.createElement('li');
         empty.className =
             'flex min-h-40 items-center justify-center px-5 py-8 text-center text-sm text-base-content/60';
-        empty.textContent = '将一个或多个 PDF 文件拖到此处';
+        empty.textContent = '将 PDF 文件或文件夹拖到此处';
         fileList.append(empty);
     } else {
         for (const file of files) {
@@ -125,6 +128,7 @@ function renderList(): void {
     clearButton.disabled = files.length === 0 || isConverting;
     convertButton.disabled = files.length === 0 || isConverting;
     browseButton.disabled = isConverting;
+    browseDirectoryButton.disabled = isConverting;
     convertButton.textContent = isConverting ? '正在转换' : '开始转换';
 }
 
@@ -144,6 +148,10 @@ async function browse(): Promise<void> {
     addPaths(await window.pdfApi.chooseFiles());
 }
 
+async function browseDirectory(): Promise<void> {
+    addPaths(await window.pdfApi.chooseDirectory());
+}
+
 function removeFile(id: number): void {
     files = files.filter((file) => file.id !== id);
     renderList();
@@ -155,6 +163,7 @@ function clearFiles(): void {
 }
 
 browseButton.addEventListener('click', () => void browse());
+browseDirectoryButton.addEventListener('click', () => void browseDirectory());
 clearButton.addEventListener('click', clearFiles);
 
 dropZone.addEventListener('dragover', (event) => {
@@ -170,7 +179,15 @@ dropZone.addEventListener('drop', (event) => {
     const paths = Array.from(event.dataTransfer?.files ?? []).map((file) =>
         window.pdfApi.pathFromFile(file),
     );
-    addPaths(paths);
+    void Promise.all(
+        paths.map(async (path) => {
+            try {
+                return await window.pdfApi.scanDirectory(path);
+            } catch {
+                return [path];
+            }
+        }),
+    ).then((pathGroups) => addPaths(pathGroups.flat()));
 });
 
 convertButton.addEventListener('click', async () => {

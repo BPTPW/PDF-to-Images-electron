@@ -1,6 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu } from 'electron';
 import { join } from 'node:path';
 import { convertPdf, outputDirectoryFor } from './conversion';
+import { findPdfFiles } from './files';
 import type { ConversionOptions } from './types';
 
 let mainWindow: BrowserWindow | undefined;
@@ -39,6 +40,21 @@ app.whenReady().then(() => {
             filters: [{ name: 'PDF 文件', extensions: ['pdf'] }],
         });
         return result.canceled ? [] : result.filePaths;
+    });
+
+    ipcMain.handle('pdf:choose-directory', async () => {
+        const result = await dialog.showOpenDialog(mainWindow!, {
+            title: '选择包含 PDF 文件的目录',
+            properties: ['openDirectory'],
+        });
+        return result.canceled ? [] : findPdfFiles(result.filePaths[0]);
+    });
+
+    ipcMain.handle('pdf:scan-directory', (_event, directoryPath: string) => {
+        if (typeof directoryPath !== 'string' || directoryPath.length === 0) {
+            throw new Error('目录路径无效。');
+        }
+        return findPdfFiles(directoryPath);
     });
 
     ipcMain.handle(
