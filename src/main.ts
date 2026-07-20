@@ -1,10 +1,55 @@
-import { app, BrowserWindow, dialog, ipcMain, Menu } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, Menu, shell } from 'electron';
 import { join } from 'node:path';
 import { convertPdf, outputDirectoryFor } from './conversion';
 import { findPdfFiles } from './files';
 import type { ConversionOptions } from './types';
+import { isNewerVersion, type ReleaseInfo } from './update';
 
 let mainWindow: BrowserWindow | undefined;
+
+interface GitHubRelease {
+    tag_name?: unknown;
+    body?: unknown;
+}
+
+async function checkForUpdate(): Promise<ReleaseInfo | null> {
+    try {
+        const response = await fetch(
+            'https://api.github.com/repos/BPTPW/PDF-to-Images-electron/releases/latest',
+            {
+                headers: {
+                    Accept: 'application/vnd.github+json',
+                    'User-Agent': 'PDF-to-Images-electron',
+                },
+                signal: AbortSignal.timeout(5_000),
+            },
+        );
+        if (!response.ok) return null;
+
+        const release = (await response.json()) as GitHubRelease;
+        if (
+            typeof release.tag_name !== 'string' ||
+            !isNewerVersion(release.tag_name, app.getVersion())
+        ) {
+            return null;
+        }
+        return {
+            version: release.tag_name.replace(/^v/i, ''),
+            currentVersion: app.getVersion(),
+            notes: typeof release.body === 'string' ? release.body : '',
+        };
+    } catch {
+        return null;
+    }
+}
+
+async function openExternalUrl(url: string): Promise<void> {
+    const parsedUrl = new URL(url);
+    if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+        throw new Error('不支持的链接协议。');
+    }
+    await shell.openExternal(parsedUrl.toString());
+}
 
 function createWindow(): void {
     mainWindow = new BrowserWindow({
@@ -74,6 +119,11 @@ app.whenReady().then(() => {
     ipcMain.handle('pdf:output-directory', (_event, inputPath: string) =>
         outputDirectoryFor(inputPath),
     );
+    ipcMain.handle('update:check', checkForUpdate);
+    ipcMain.handle('shell:open-external', (_event, url: string) => {
+        if (typeof url !== 'string') throw new Error('链接无效。');
+        return openExternalUrl(url);
+    });
     createWindow();
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) createWindow();

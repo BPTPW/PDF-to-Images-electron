@@ -1,4 +1,6 @@
 import type { ImageFormat } from './types';
+import DOMPurify from 'dompurify';
+import { marked } from 'marked';
 import successIcon from './assets/success.svg?raw';
 import errorIcon from './assets/error.svg?raw';
 
@@ -14,6 +16,13 @@ const convertButton =
     document.querySelector<HTMLButtonElement>('#convert-button')!;
 const format = document.querySelector<HTMLSelectElement>('#format')!;
 const dpi = document.querySelector<HTMLSelectElement>('#dpi')!;
+const updateDialog =
+    document.querySelector<HTMLDialogElement>('#update-dialog')!;
+const updateTitle =
+    document.querySelector<HTMLHeadingElement>('#update-title')!;
+const currentVersion =
+    document.querySelector<HTMLParagraphElement>('#current-version')!;
+const updateNotes = document.querySelector<HTMLDivElement>('#update-notes')!;
 
 type JobState = 'pending' | 'converting' | 'complete' | 'failed';
 
@@ -162,9 +171,33 @@ function clearFiles(): void {
     renderList();
 }
 
+async function showAvailableUpdate(): Promise<void> {
+    const release = await window.pdfApi.checkForUpdate();
+    if (!release) return;
+
+    updateTitle.textContent = `发现新版本 ${release.version}！`;
+    currentVersion.textContent = `当前版本：${release.currentVersion}`;
+    const markdown = marked.parse(release.notes) as string;
+    updateNotes.innerHTML = DOMPurify.sanitize(markdown, {
+        USE_PROFILES: { html: true },
+    });
+    updateDialog.showModal();
+}
+
+function openReleaseLink(event: MouseEvent): void {
+    const link = (event.target as Element | null)?.closest<HTMLAnchorElement>(
+        'a[href]',
+    );
+    if (!link) return;
+
+    event.preventDefault();
+    void window.pdfApi.openExternal(link.href);
+}
+
 browseButton.addEventListener('click', () => void browse());
 browseDirectoryButton.addEventListener('click', () => void browseDirectory());
 clearButton.addEventListener('click', clearFiles);
+updateNotes.addEventListener('click', openReleaseLink);
 
 dropZone.addEventListener('dragover', (event) => {
     event.preventDefault();
@@ -225,3 +258,4 @@ convertButton.addEventListener('click', async () => {
 });
 
 renderList();
+void showAvailableUpdate();

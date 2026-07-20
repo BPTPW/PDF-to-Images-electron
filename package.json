@@ -1,6 +1,6 @@
 {
     "name": "pdf-to-images",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "A local Electron application for converting PDF pages to images.",
     "main": ".vite/build/main.js",
     "license": "GPL-3.0-or-later",
@@ -23,5 +23,10 @@
         "typescript": "^7.0.2",
         "vite": "^8.1.5",
         "vitest": "^4.1.10"
+    },
+    "dependencies": {
+        "@types/dompurify": "^3.0.5",
+        "dompurify": "^3.4.12",
+        "marked": "^18.0.6"
     }
 }
