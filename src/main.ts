@@ -8,7 +8,7 @@ let mainWindow: BrowserWindow | undefined;
 function createWindow(): void {
     mainWindow = new BrowserWindow({
         width: 840,
-        height: 720,
+        height: 550,
         minWidth: 680,
         minHeight: 580,
         show: false,
@@ -20,6 +20,7 @@ function createWindow(): void {
         },
     });
     mainWindow.once('ready-to-show', () => mainWindow?.show());
+    mainWindow.webContents.openDevTools({ mode: 'detach' });
     if (MAIN_WINDOW_VITE_DEV_SERVER_URL)
         mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
     else
