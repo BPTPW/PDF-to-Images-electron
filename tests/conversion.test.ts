@@ -2,7 +2,11 @@ import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { outputDirectoryFor, pageNumberWidth } from '../src/conversion';
+import {
+  outputDirectoryFor,
+  pageNumberWidth,
+  resolvePdftocairoPath,
+} from '../src/conversion';
 import { findPdfFiles } from '../src/files';
 
 const temporaryDirectories: string[] = [];
@@ -22,6 +26,20 @@ describe('output naming', () => {
 
   it('writes output beside the source PDF', () => {
     expect(outputDirectoryFor('E:\\docs\\report.pdf')).toBe('E:\\docs\\report');
+  });
+});
+
+describe('Poppler executable path', () => {
+  it('uses Electron resourcesPath directly in packaged builds', () => {
+    const executable = process.platform === 'win32' ? 'pdftocairo.exe' : 'pdftocairo';
+    const platformDirectory = `${process.platform}-${process.arch}`;
+
+    expect(
+      resolvePdftocairoPath({
+        isPackaged: true,
+        resourcesPath: 'E:\\app\\resources',
+      }),
+    ).toBe(join('E:\\app\\resources', 'poppler', platformDirectory, executable));
   });
 });
 

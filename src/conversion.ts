@@ -15,14 +15,21 @@ export function outputDirectoryFor(inputPath: string): string {
     return join(dirname(inputPath), basename(inputPath, extname(inputPath)));
 }
 
-export function resolvePdftocairoPath(): string {
+export function resolvePdftocairoPath(options?: {
+    isPackaged?: boolean;
+    resourcesPath?: string;
+    cwd?: string;
+}): string {
     const executable =
         process.platform === 'win32' ? 'pdftocairo.exe' : 'pdftocairo';
     const platformDirectory = `${process.platform}-${process.arch}`;
-    const root = process.defaultApp ? process.cwd() : process.resourcesPath;
+    const isPackaged = options?.isPackaged ?? !process.defaultApp;
+    const root = isPackaged
+        ? (options?.resourcesPath ?? process.resourcesPath)
+        : join(options?.cwd ?? process.cwd(), 'resources');
     return (
         process.env.PDFTOCAIRO_PATH ||
-        join(root, 'resources', 'poppler', platformDirectory, executable)
+        join(root, 'poppler', platformDirectory, executable)
     );
 }
 
