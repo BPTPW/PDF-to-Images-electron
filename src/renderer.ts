@@ -1,4 +1,5 @@
 import type { ImageFormat } from './types';
+import type { UpdateProgress } from './update';
 import DOMPurify from 'dompurify';
 import { marked } from 'marked';
 import successIcon from './assets/success.svg?raw';
@@ -23,6 +24,29 @@ const updateTitle =
 const currentVersion =
     document.querySelector<HTMLParagraphElement>('#current-version')!;
 const updateNotes = document.querySelector<HTMLDivElement>('#update-notes')!;
+const updateButton =
+    document.querySelector<HTMLButtonElement>('#update-button')!;
+const downloadDialog =
+    document.querySelector<HTMLDialogElement>('#download-dialog')!;
+const downloadTitle =
+    document.querySelector<HTMLHeadingElement>('#download-title')!;
+const updateProgress =
+    document.querySelector<HTMLProgressElement>('#update-progress')!;
+const updateProgressPercent = document.querySelector<HTMLParagraphElement>(
+    '#update-progress-percent',
+)!;
+const updateProgressSize = document.querySelector<HTMLParagraphElement>(
+    '#update-progress-size',
+)!;
+const updateProgressSpeed = document.querySelector<HTMLParagraphElement>(
+    '#update-progress-speed',
+)!;
+const updateProgressRemaining = document.querySelector<HTMLParagraphElement>(
+    '#update-progress-remaining',
+)!;
+const cancelUpdateButton = document.querySelector<HTMLButtonElement>(
+    '#cancel-update-button',
+)!;
 
 type JobState = 'pending' | 'converting' | 'complete' | 'failed';
 
@@ -194,10 +218,111 @@ function openReleaseLink(event: MouseEvent): void {
     void window.pdfApi.openExternal(link.href);
 }
 
+function formatBytes(bytes: number): string {
+    if (bytes <= 0) return '0 B';
+    if (bytes < 1_024) return `${bytes}B`;
+    const units = ['KB', 'MB', 'GB'];
+    const unit = Math.min(
+        Math.floor(Math.log(bytes) / Math.log(1_024)),
+        units.length,
+    );
+    return `${(bytes / 1_024 ** unit).toFixed(unit === 1 ? 0 : 1)}${units[unit - 1]}`;
+}
+
+function formatRemainingTime(seconds: number): string {
+    const roundedSeconds = Math.max(0, Math.ceil(seconds));
+    const hours = Math.floor(roundedSeconds / 3_600);
+    const minutes = Math.floor((roundedSeconds % 3_600) / 60);
+    const remainingSeconds = roundedSeconds % 60;
+    const minutesAndSeconds = `${String(minutes).padStart(2, '0')}:${String(
+        remainingSeconds,
+    ).padStart(2, '0')}`;
+    return hours > 0
+        ? `${String(hours).padStart(2, '0')}:${minutesAndSeconds}`
+        : minutesAndSeconds;
+}
+
+function resetDownloadDialog(): void {
+    downloadTitle.textContent = '正在下载更新';
+    updateProgress.value = 0;
+    updateProgressPercent.textContent = '0%';
+    updateProgressSize.textContent = '0B/--';
+    updateProgressSpeed.textContent = '0B/s';
+    updateProgressRemaining.textContent = '--:--';
+    cancelUpdateButton.disabled = false;
+    cancelUpdateButton.textContent = '取消';
+}
+
+function showUpdateError(message: string): void {
+    downloadTitle.textContent = '更新失败';
+    updateProgressSize.textContent = message;
+    updateProgressSpeed.textContent = '';
+    updateProgressRemaining.textContent = '';
+    cancelUpdateButton.disabled = false;
+    cancelUpdateButton.textContent = '关闭';
+}
+
+function handleUpdateProgress(progress: UpdateProgress): void {
+    if (progress.phase === 'download') {
+        const percent = Math.round(progress.percent);
+        updateProgress.value = percent;
+        updateProgressPercent.textContent = `${percent}%`;
+        updateProgressSize.textContent = progress.totalBytes
+            ? `${formatBytes(progress.downloadedBytes ?? 0)}/${formatBytes(progress.totalBytes)}`
+            : formatBytes(progress.downloadedBytes ?? 0);
+        updateProgressSpeed.textContent = progress.speedBytesPerSecond
+            ? `${formatBytes(progress.speedBytesPerSecond)}/s`
+            : '0B/s';
+        updateProgressRemaining.textContent =
+            progress.remainingSeconds !== undefined
+                ? formatRemainingTime(progress.remainingSeconds)
+                : '--:--';
+        return;
+    }
+    if (progress.phase === 'extract') {
+        const percent = Math.round(progress.percent);
+        downloadTitle.textContent = '正在解压更新';
+        updateProgress.value = percent;
+        updateProgressPercent.textContent = `${percent}%`;
+        updateProgressSize.textContent = '解压中...';
+        updateProgressSpeed.textContent = '';
+        updateProgressRemaining.textContent = '';
+        cancelUpdateButton.disabled = true;
+        return;
+    }
+    if (progress.phase === 'cancelled') {
+        downloadDialog.close();
+        return;
+    }
+    showUpdateError(progress.message ?? '更新失败。');
+}
+
 browseButton.addEventListener('click', () => void browse());
 browseDirectoryButton.addEventListener('click', () => void browseDirectory());
 clearButton.addEventListener('click', clearFiles);
 updateNotes.addEventListener('click', openReleaseLink);
+updateButton.addEventListener('click', () => {
+    updateDialog.close();
+    resetDownloadDialog();
+    downloadDialog.showModal();
+    void window.pdfApi
+        .startUpdateDownload()
+        .catch((error: unknown) =>
+            showUpdateError(
+                error instanceof Error ? error.message : '更新失败。',
+            ),
+        );
+});
+cancelUpdateButton.addEventListener('click', () => {
+    if (cancelUpdateButton.textContent === '关闭') {
+        downloadDialog.close();
+        return;
+    }
+    cancelUpdateButton.disabled = true;
+    void window.pdfApi.cancelUpdateDownload();
+});
+downloadDialog.addEventListener('cancel', (event) => event.preventDefault());
+window.pdfApi.onUpdateProgress(handleUpdateProgress);
 
 dropZone.addEventListener('dragover', (event) => {
     event.preventDefault();
